@@ -79,11 +79,6 @@ class SetupAppCommand(Command):
                     self.info("  Skipping .env setup")
                     return True
 
-                # Backup existing .env
-                backup_path = Storage.base('.env.backup')
-                shutil.copy(env_path, backup_path)
-                self.line(f"  Created backup: .env.backup")
-
             # Check if template exists
             if not template_path.exists():
                 self.error("  .env.template not found!")

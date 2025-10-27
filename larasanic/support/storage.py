@@ -288,6 +288,7 @@ class Storage:
             cls.keys(),
             cls.database(),
             cls.logs(),
+            cls.public(),
         ]
 
         for directory in directories:
