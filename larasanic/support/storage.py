@@ -40,6 +40,7 @@ class Storage:
     # Base directories
     _base_path: Path = None
     _storage_path: Path = None
+    _framework_path: Path = None
 
     @classmethod
     def initialize(cls, base_path: Union[str, Path] = None):
@@ -56,6 +57,29 @@ class Storage:
 
         cls._base_path = Path(base_path).resolve()
         cls._storage_path = cls._base_path / 'storage'
+
+        # Locate the installed larasanic framework directory
+        # This is needed to access framework resources (stubs, templates, etc.)
+        cls._framework_path = Path(__file__).parent.parent.resolve()
+
+    @classmethod
+    def framework(cls, *paths: str) -> Path:
+        """
+        Get framework installation path (where larasanic package is installed)
+        Use this for accessing framework resources like stubs, templates, etc.
+
+        Args:
+            *paths: Additional path segments
+
+        Returns:
+            Path object pointing to framework directory or subdirectory
+        """
+        if cls._framework_path is None:
+            cls.initialize()
+
+        if paths:
+            return cls._framework_path.joinpath(*paths)
+        return cls._framework_path
 
     @classmethod
     def base(cls, *paths: str) -> Path:

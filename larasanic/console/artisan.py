@@ -10,8 +10,8 @@ import inspect
 class Artisan:
     # Paths to scan for commands
     COMMAND_PATHS = [
-        Storage.base('larasanic', 'console', 'commands'),
-        Storage.app('console'),
+        Storage.framework('console', 'commands'),  # Framework built-in commands
+        Storage.app('console'),  # User's application commands
     ]
 
     # Cache key for artisan commands
