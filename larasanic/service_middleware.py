@@ -10,7 +10,6 @@ class ServiceMiddleware:
         self.app = app
         self.middlewares = []  # List of (middleware_instance, name) tuples
         self._middleware_groups = None
-        self._skip_paths = []
 
     def add(self, middleware_instance: Middleware, name: str = None):
         """
@@ -23,7 +22,6 @@ class ServiceMiddleware:
         if self._middleware_groups is None:
             from larasanic.support import Config
             self._middleware_groups = Config.get('middleware.MIDDLEWARE_GROUPS', {})
-            self._skip_paths = Config.get('middleware.MIDDLEWARE_SKIP_PATHS', [])
 
     def _should_skip_middleware(self, blueprint_route_name, middleware: Middleware, middleware_name: str) -> bool:
         """
