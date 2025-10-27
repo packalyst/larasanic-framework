@@ -4,7 +4,7 @@ Blade Service Provider
 from larasanic.service_provider import ServiceProvider
 from larasanic.support import Storage, EnvHelper, Config,BladeTemplateEngine
 from larasanic.support.facades import App,TemplateBlade
-from blade.utils.safe_string import SafeString
+from swiftblade.utils.safe_string import SafeString
 import re
 from pathlib import Path
 

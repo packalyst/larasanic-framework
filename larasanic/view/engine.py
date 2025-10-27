@@ -4,7 +4,7 @@ Smart, unified rendering engine with automatic detection
 """
 import json
 from typing import Optional, Dict, Any, TYPE_CHECKING
-from blade.exceptions import TemplateNotFoundException
+from swiftblade.exceptions import TemplateNotFoundException
 from larasanic.support import Config
 from larasanic.view.context import build_context
 from larasanic.support.facades import TemplateBlade, App

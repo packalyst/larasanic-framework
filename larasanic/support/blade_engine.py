@@ -3,7 +3,7 @@ Blade Template Engine Integration
 """
 
 from typing import Optional, Dict, Any, TYPE_CHECKING
-from blade import BladeEngine
+from swiftblade import BladeEngine
 
 if TYPE_CHECKING:
     from pathlib import Path
