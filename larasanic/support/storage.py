@@ -3,6 +3,7 @@ Storage - Centralized path management (Laravel-style)
 Provides consistent path resolution across the application
 """
 
+import os
 from pathlib import Path
 from typing import Union
 
@@ -49,9 +50,9 @@ class Storage:
             base_path: Application base directory (defaults to current working directory)
         """
         if base_path is None:
-            # Auto-detect base path from this file's location
-            # larasanic/support/storage.py -> go up 2 levels to get project root
-            base_path = Path(__file__).parent.parent.parent
+            # Use current working directory as base path
+            # This allows the framework to work when installed via pip
+            base_path = os.getcwd()
 
         cls._base_path = Path(base_path).resolve()
         cls._storage_path = cls._base_path / 'storage'
