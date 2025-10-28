@@ -312,7 +312,7 @@ def validate_session_config(config) -> ConfigValidator:
         validator.validate_in_choices(
             'session.SESSION_DRIVER',
             driver,
-            ['cookie', 'file', 'redis', 'database']
+            ['cookie', 'file', 'database']
         )
 
     return validator
