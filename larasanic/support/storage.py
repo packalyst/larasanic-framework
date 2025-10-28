@@ -293,7 +293,6 @@ class Storage:
 
         for directory in directories:
             cls.ensure_directory(directory)
-        cls.mark_setup_complete()
         return True
 
     # Utility methods for path operations
