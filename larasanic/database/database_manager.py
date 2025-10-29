@@ -184,6 +184,37 @@ class DatabaseManager:
         """
         await Tortoise.generate_schemas(safe=safe)
 
+    def get_model(self, table_name: str):
+        """
+        Get model by table name
+
+        Args:
+            table_name: Name of the table (plural, snake_case)
+
+        Returns:
+            Model class or None if not found
+        """
+        try:
+            # Get all registered models from Tortoise
+            models = Tortoise.apps.get(self.app_label, {})
+
+            # Try to find model by table name
+            for model_name, model_class in models.items():
+                if hasattr(model_class, '_meta') and hasattr(model_class._meta, 'db_table'):
+                    if model_class._meta.db_table == table_name:
+                        return model_class
+
+            # Fallback: try to find by model name (convert table_name to model name)
+            # e.g., 'users' -> 'User', 'user_profiles' -> 'UserProfile'
+            model_name = ''.join(word.capitalize() for word in table_name.rstrip('s').split('_'))
+            if model_name in models:
+                return models[model_name]
+
+            return None
+
+        except Exception:
+            return None
+
     async def validate_initialized(self):
         """
         Check if database has been initialized with migrations
