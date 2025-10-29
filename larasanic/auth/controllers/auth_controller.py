@@ -43,7 +43,7 @@ class AuthController:
         # Return auth state
         auth_state = {
             "isAuthenticated": True,
-            "user": await user.to_dict(),
+            "user": user.to_dict(),
             "token": access_token
         }
 
@@ -111,4 +111,4 @@ class AuthController:
         if not user:
             return ResponseHelper.unauthorized("Not authenticated")
 
-        return ResponseHelper.success(await user.to_dict())
+        return ResponseHelper.success(user.to_dict())
