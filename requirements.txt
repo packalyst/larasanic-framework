@@ -23,7 +23,6 @@ certifi>=2025.8.0  # CRITICAL SSL cert update
 redis>=6.4.0
 
 aiofiles>=23.2.1
-aioredis>=2.0.1
 
 # Security & Crypto
 bcrypt>=5.0.0  # Updated to latest

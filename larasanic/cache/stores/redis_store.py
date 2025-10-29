@@ -4,7 +4,7 @@ High-performance in-memory caching (10-50x faster than file)
 """
 import json
 from typing import Any, Optional
-import aioredis
+from redis import asyncio as aioredis
 from larasanic.cache.cache_interface import CacheStoreInterface
 
 
@@ -27,7 +27,7 @@ class RedisStore(CacheStoreInterface):
     async def _ensure_connected(self):
         """Ensure connection to Redis"""
         if not self._connected:
-            self.redis = await aioredis.from_url(
+            self.redis = aioredis.from_url(
                 self.redis_url,
                 encoding='utf-8',
                 decode_responses=True

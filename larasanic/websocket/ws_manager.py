@@ -12,7 +12,7 @@ from sanic import Request
 
 # Redis for inter-process communication
 try:
-    import aioredis
+    from redis import asyncio as aioredis
     REDIS_AVAILABLE = True
 except ImportError:
     REDIS_AVAILABLE = False
@@ -52,7 +52,7 @@ class WebSocketManager:
             from larasanic.defaults import DEFAULT_REDIS_URL
             redis_url = Config.get('cache.REDIS_URL', DEFAULT_REDIS_URL)
 
-            self.redis_client = await aioredis.from_url(
+            self.redis_client = aioredis.from_url(
                 redis_url,
                 encoding='utf-8',
                 decode_responses=True
