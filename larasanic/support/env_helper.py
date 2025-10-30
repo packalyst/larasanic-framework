@@ -162,7 +162,11 @@ class EnvHelper:
                 cls._env_path.touch()
 
             # Convert value to string
-            str_value = str(value) if not isinstance(value, str) else value
+            match value:
+                case str():
+                    str_value = value
+                case _:
+                    str_value = str(value)
 
             # Write to .env file
             result = set_key(str(cls._env_path), key, str_value, quote_mode=quote_mode)

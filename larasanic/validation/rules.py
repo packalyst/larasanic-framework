@@ -84,17 +84,18 @@ class Min(ValidationRule):
 
         min_val = self.parameters[0]
 
-        if isinstance(value, str):
-            if len(value) < min_val:
-                return False, self.message(field)
-        elif isinstance(value, (int, float)):
-            if value < min_val:
-                return False, self.message(field)
-        elif isinstance(value, (list, dict)):
-            if len(value) < min_val:
-                return False, self.message(field)
-        else:
-            return False, f"The {field} field must be a string, number, list, or dict."
+        match value:
+            case str():
+                if len(value) < min_val:
+                    return False, self.message(field)
+            case int() | float():
+                if value < min_val:
+                    return False, self.message(field)
+            case list() | dict():
+                if len(value) < min_val:
+                    return False, self.message(field)
+            case _:
+                return False, f"The {field} field must be a string, number, list, or dict."
 
         return True, None
 
@@ -111,17 +112,18 @@ class Max(ValidationRule):
 
         max_val = self.parameters[0]
 
-        if isinstance(value, str):
-            if len(value) > max_val:
-                return False, self.message(field)
-        elif isinstance(value, (int, float)):
-            if value > max_val:
-                return False, self.message(field)
-        elif isinstance(value, (list, dict)):
-            if len(value) > max_val:
-                return False, self.message(field)
-        else:
-            return False, f"The {field} field must be a string, number, list, or dict."
+        match value:
+            case str():
+                if len(value) > max_val:
+                    return False, self.message(field)
+            case int() | float():
+                if value > max_val:
+                    return False, self.message(field)
+            case list() | dict():
+                if len(value) > max_val:
+                    return False, self.message(field)
+            case _:
+                return False, f"The {field} field must be a string, number, list, or dict."
 
         return True, None
 

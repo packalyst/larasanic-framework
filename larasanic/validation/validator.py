@@ -68,13 +68,14 @@ class Validator:
         """
         normalized = {}
         for field, rule_def in rules.items():
-            if isinstance(rule_def, str):
-                # Split by pipe
-                normalized[field] = [r.strip() for r in rule_def.split('|') if r.strip()]
-            elif isinstance(rule_def, list):
-                normalized[field] = rule_def
-            else:
-                normalized[field] = [str(rule_def)]
+            match rule_def:
+                case str():
+                    # Split by pipe
+                    normalized[field] = [r.strip() for r in rule_def.split('|') if r.strip()]
+                case list():
+                    normalized[field] = rule_def
+                case _:
+                    normalized[field] = [str(rule_def)]
         return normalized
 
     def _parse_rule(self, rule_string: str) -> tuple[str, List[Any]]:

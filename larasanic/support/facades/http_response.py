@@ -191,29 +191,30 @@ class ResponseBuilder:
         """Auto-detect response type from content"""
         from larasanic.support.facades import HttpRequest
         content = self._content
+
         if content is None:
             return 'text'
-
-        if isinstance(content, HTTPResponse):
-            return 'raw'
 
         if HttpRequest.wants_json():
             return 'json'
 
-        if isinstance(content, dict) or isinstance(content, list):
-            return 'json'
-        elif isinstance(content, str):
-            content_lower = content.strip().lower()
-            if content_lower.startswith('<!doctype') or content_lower.startswith('<html'):
-                return 'html'
-            elif '<' in content and '>' in content:
-                return 'html'
-            else:
-                return 'text'
-        elif isinstance(content, bytes):
-            return 'raw'
-        else:
-            return 'json'
+        match content:
+            case HTTPResponse():
+                return 'raw'
+            case dict() | list():
+                return 'json'
+            case str():
+                content_lower = content.strip().lower()
+                if content_lower.startswith('<!doctype') or content_lower.startswith('<html'):
+                    return 'html'
+                elif '<' in content and '>' in content:
+                    return 'html'
+                else:
+                    return 'text'
+            case bytes():
+                return 'raw'
+            case _:
+                return 'json'
 
     def _create_response(self, content: Any, response_type: str) -> HTTPResponse:
         """Create Sanic response based on type with structured format"""

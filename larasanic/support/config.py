@@ -86,40 +86,41 @@ class Config:
 
         # Navigate nested attributes (case-insensitive)
         for part in path:
-            # Try case-insensitive attribute lookup
-            if hasattr(value, '__dict__'):
-                # Module or object with attributes
-                attr_found = False
-                for attr_name in dir(value):
-                    if attr_name.lower() == part:
-                        value = getattr(value, attr_name)
-                        attr_found = True
-                        break
-                if not attr_found:
-                    # Try as dict if attribute not found
-                    if isinstance(value, dict):
-                        dict_found = False
-                        for dict_key in value.keys():
-                            if dict_key.lower() == part:
-                                value = value[dict_key]
-                                dict_found = True
-                                break
-                        if not dict_found:
-                            return default
-                    else:
+            match value:
+                case _ if hasattr(value, '__dict__'):
+                    # Module or object with attributes
+                    attr_found = False
+                    for attr_name in dir(value):
+                        if attr_name.lower() == part:
+                            value = getattr(value, attr_name)
+                            attr_found = True
+                            break
+                    if not attr_found:
+                        # Try as dict if attribute not found
+                        match value:
+                            case dict():
+                                dict_found = False
+                                for dict_key in value.keys():
+                                    if dict_key.lower() == part:
+                                        value = value[dict_key]
+                                        dict_found = True
+                                        break
+                                if not dict_found:
+                                    return default
+                            case _:
+                                return default
+                case dict():
+                    # Dict lookup (case-insensitive)
+                    dict_found = False
+                    for dict_key in value.keys():
+                        if dict_key.lower() == part:
+                            value = value[dict_key]
+                            dict_found = True
+                            break
+                    if not dict_found:
                         return default
-            elif isinstance(value, dict):
-                # Dict lookup (case-insensitive)
-                dict_found = False
-                for dict_key in value.keys():
-                    if dict_key.lower() == part:
-                        value = value[dict_key]
-                        dict_found = True
-                        break
-                if not dict_found:
+                case _:
                     return default
-            else:
-                return default
 
         # Cache the value if caching is enabled
         if cls._caching_enabled:
