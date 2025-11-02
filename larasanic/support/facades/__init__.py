@@ -13,6 +13,7 @@ from larasanic.support.facades.template_blade import TemplateBlade
 from larasanic.support.facades.url import URL
 from larasanic.support.facades.cache import Cache
 from larasanic.support.facades.websocket import WebSocket
+from larasanic.support.facades.package_manager import PackageManager
 
 __all__ = [
     'Facade',
@@ -25,5 +26,6 @@ __all__ = [
     'TemplateBlade',
     'URL',
     'Cache',
-    'WebSocket'
+    'WebSocket',
+    'PackageManager'
 ]

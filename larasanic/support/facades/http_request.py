@@ -519,8 +519,7 @@ class HttpRequest(Facade, metaclass=HttpRequestMeta):
     def _handle_spa_request(cls) -> Dict[str, Any]:
         """Analyze request and return detailed information"""
         
-
-        request = cls.get_current_request()
+        # request = cls.get_current_request()
         return_data = {
             'is_ajax': False,
             'is_json_request': False,

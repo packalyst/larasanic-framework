@@ -53,11 +53,8 @@ class HttpServiceProvider(ServiceProvider):
             try:
                 middleware_cls = ClassLoader.load(middleware_path)
 
-                # Register if enabled
-                instance = middleware_cls._register_middleware()
-                if instance:
-                    # Store with name for blueprint filtering
-                    middleware_manager.add(instance, name=name)
+                # Pass the CLASS - add() will handle registration and config loading
+                middleware_manager.add(middleware_cls, name=name)
             except Exception as e:
                 # print(f"❌ Failed to load global middleware '{name}': {e}")
                 pass

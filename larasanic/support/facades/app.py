@@ -36,3 +36,13 @@ class App(Facade):
     def get_facade_root(cls):
         """Override to return app directly instead of resolving"""
         return cls.get_app()
+
+    @classmethod
+    def get_sanic(cls):
+        """
+        Get the application instance
+
+        Returns:
+            Application instance or None
+        """
+        return cls.get_app().sanic_app

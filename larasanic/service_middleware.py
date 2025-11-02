@@ -11,11 +11,27 @@ class ServiceMiddleware:
         self.middlewares = []  # List of (middleware_instance, name) tuples
         self._middleware_groups = None
 
-    def add(self, middleware_instance: Middleware, name: str = None):
+    def add(self, middleware_class_or_instance, name: str = None):
         """
         Add a middleware to the stack
+
+        Args:
+            middleware_class_or_instance: Either a Middleware class or instance
+            name: Optional middleware name for blueprint filtering
         """
-        self.middlewares.append((middleware_instance, name))
+        # If it's a class, call _register_middleware() factory method
+        if isinstance(middleware_class_or_instance, type):
+            # It's a class - call factory method
+            instance = middleware_class_or_instance._register_middleware()
+
+            # If _register_middleware() returned None (disabled), skip it
+            if instance is None:
+                return
+
+            self.middlewares.append((instance, name))
+        else:
+            # It's already an instance - add directly
+            self.middlewares.append((middleware_class_or_instance, name))
 
     def _load_middleware_config(self):
         """Load middleware configuration from config"""
@@ -68,7 +84,7 @@ class ServiceMiddleware:
         @self.app.sanic_app.middleware('request')
         async def process_request(request):
             # Set current request and analyze it (stores analysis in request.ctx)
-            Facade.set_current_request(request)
+            await Facade.set_current_request(request)
 
             # Track which middlewares actually ran for this request
             HttpRequest.set('_executed_middlewares',[])

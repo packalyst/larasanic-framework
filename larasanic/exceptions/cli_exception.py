@@ -19,16 +19,7 @@ def handle_cli_exceptions(error: Exception):
     # Error-specific messages
     print("\n" + _colorize(CliBox.TL + CliBox.H * (width - 2) + CliBox.TR, CliColors.YELLOW))
 
-    if isinstance(error, ValueError) and "JWT_KEY_NAME" in str(error):
-        print(_box_line(_colorize("❌ Missing Security Keys", CliColors.BOLD + CliColors.YELLOW), width))
-        print(_colorize(CliBox.L + CliBox.H * (width - 2) + CliBox.R, CliColors.YELLOW))
-        print(_box_line("", width))
-        print(_box_line(_colorize("Please generate security keys first:", CliColors.WHITE), width))
-        print(_box_line("", width))
-        print(_box_line(_colorize("  python app/artisan.py generate-keys", CliColors.GREEN), width))
-        print(_box_line("", width))
-
-    elif isinstance(error, ValueError) and "CSRF_SECRET" in str(error):
+    if isinstance(error, ValueError) and "CSRF_SECRET" in str(error):
         print(_box_line(_colorize("❌ Missing CSRF Secret", CliColors.BOLD + CliColors.YELLOW), width))
         print(_colorize(CliBox.L + CliBox.H * (width - 2) + CliBox.R, CliColors.YELLOW))
         print(_box_line("", width))

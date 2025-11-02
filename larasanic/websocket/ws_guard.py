@@ -10,36 +10,22 @@ from larasanic.support import Config
 class WebSocketGuard:
     """WebSocket authentication guard"""
 
-    def __init__(self, auth_service):
-        """
-        Initialize WebSocket guard
-
-        Args:
-            auth_service: AuthService instance for token verification
-        """
-        self.auth_service = auth_service
+    def __init__(self):
+        pass
 
     async def authenticate_websocket(self, request: Request, ws) -> Optional[int]:
         from larasanic.support.facades import HttpRequest
         try:
-            # Extract JWT from cookies
-            access_token = HttpRequest.get_cookie(Config.get('security.COOKIE_ACCESS_TOKEN_NAME'))
-
-            if not access_token:
+            user = HttpRequest.get_user()
+            if not user:
                 await ws.close(code=Config.get('security.WS_AUTH_CLOSE_CODE'), reason="Authentication failed")
                 return None
 
-            # Verify token and extract user_id
-            user_id = self.auth_service.extract_user_id_from_token(
-                access_token,
-                token_type=Config.get('security.TOKEN_TYPE_ACCESS')
-            )
-
-            if not user_id:
+            if not user.id:
                 await ws.close(code=Config.get('security.WS_AUTH_CLOSE_CODE'), reason="Authentication failed")
                 return None
 
-            return user_id
+            return user.id
 
         except Exception as e:
             await ws.close(code=Config.get('security.WS_AUTH_CLOSE_CODE'), reason="Authentication failed")

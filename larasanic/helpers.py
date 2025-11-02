@@ -4,7 +4,6 @@ Centralized user-facing helpers for easy access throughout the application
 """
 from typing import Any, Optional, Dict, Union, List
 
-
 # ==============================================================================
 # Session Helpers
 # ==============================================================================
@@ -350,5 +349,3 @@ async def broadcast_to_channel(channel: str, data: Any):
 
         # Publish to Redis
         await _cli_ws_manager._publish_to_redis(channel, data)
-
-

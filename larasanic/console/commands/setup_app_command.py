@@ -30,10 +30,6 @@ class SetupAppCommand(Command):
             if not await self._generate_secrets():
                 return 1
             
-            # Step 3: Generate JWT keys
-            if not await self._generate_keys():
-                return 1
-            
             # Step 4: Cache settings
             if not await self._setup_cache():
                 return 1
@@ -161,73 +157,24 @@ class SetupAppCommand(Command):
             return False
 
     async def _generate_secrets(self) -> bool:
-        """Generate CSRF secret"""
+        """Generate APP_SECRET_KEY and CSRF secret"""
         try:
             self.info("Step 3/5: Generating secrets...")
 
+            # Generate APP_SECRET_KEY (used for sessions, cookies, signing)
+            app_secret = Crypto.generate_secret(32)  # 64-char hex string
+            EnvHelper.set('APP_SECRET_KEY', app_secret)
+            self.success(f"  Generated APP_SECRET_KEY")
+
             # Generate CSRF secret
             csrf_secret = Crypto.generate_token(32)
-
-            # Save to .env file
             EnvHelper.set('CSRF_SECRET', csrf_secret)
-
             self.success(f"  Generated CSRF_SECRET")
+
             return True
 
         except Exception as e:
             self.error(f"  Failed to generate secrets: {e}")
-            return False
-
-    async def _generate_keys(self) -> bool:
-        """Generate JWT keys"""
-        try:
-            self.info("Step 4/5: Generating JWT keys...")
-
-            # Get or generate JWT_KEY_NAME
-            key_name = EnvHelper.get('JWT_KEY_NAME')
-
-            if not key_name:
-                # Generate random key name
-                random_suffix = Crypto.generate_secret(8)
-                key_name = f"jwt_{random_suffix}"
-
-                # Save to .env file
-                EnvHelper.set('JWT_KEY_NAME', key_name)
-                self.line(f"  Generated JWT_KEY_NAME: {key_name}")
-
-            public_key_path, private_key_path = Storage.get_jwt_paths()
-
-            # Check if keys already exist
-            if Storage.exists(private_key_path) or Storage.exists(public_key_path):
-                self.warning("  JWT keys already exist")
-                if not self.confirm("  Regenerate JWT keys?", default=False):
-                    self.info("  Skipping JWT key generation")
-                    return True
-
-                # Delete existing keys
-                if Storage.exists(private_key_path):
-                    Storage.unlink(private_key_path)
-                if Storage.exists(public_key_path):
-                    Storage.unlink(public_key_path)
-
-            # Ensure keys directory exists
-            Storage.ensure_directory(Storage.keys())
-
-            # Generate RSA key pair
-            private_pem, public_pem = Crypto.generate_rsa_keypair(key_size=2048)
-
-            # Save keys
-            Crypto.save_rsa_keypair(private_pem, public_pem, private_key_path, public_key_path)
-
-            self.success(f"  Generated JWT keys")
-            self.line(f"    Private: {private_key_path}")
-            self.line(f"    Public: {public_key_path}")
-            return True
-
-        except Exception as e:
-            self.error(f"  Failed to generate keys: {e}")
-            import traceback
-            traceback.print_exc()
             return False
 
     async def _setup_cache(self) -> bool:

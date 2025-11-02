@@ -5,6 +5,7 @@ Handles Tortoise ORM initialization and connection management
 from tortoise import Tortoise
 from typing import Dict, Any, List
 from larasanic.support import Config
+from larasanic.database.model_discovery import ModelDiscovery
 
 class DatabaseManager:
     """Manages database connections and Tortoise ORM"""
@@ -15,7 +16,11 @@ class DatabaseManager:
         """
         from larasanic.support import Storage
         self.database_url = Config.get('database.DATABASE_URL')
-        self.models = Config.get('database.MODELS', [])
+
+        # Auto-discover models and apply user config
+        user_config = Config.get('database.MODELS', [])
+        self.models = ModelDiscovery.discover_and_build(user_config)
+        
         self.migrations_path = Storage.database('migrations')
         Storage.ensure_directory(self.migrations_path)
         self._initialized = False

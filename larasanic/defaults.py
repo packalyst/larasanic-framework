@@ -38,7 +38,6 @@ DEFAULT_HTTP_POOL_MAXSIZE = 20
 DEFAULT_SESSION_LIFETIME = 7200  # seconds (2 hours)
 DEFAULT_SESSION_COOKIE_NAME = 'framework_session'
 DEFAULT_SESSION_ID_LENGTH = 40
-DEFAULT_SESSION_SECRET_LENGTH = 32
 DEFAULT_SESSION_LOTTERY = [2, 100]  # [chances, out_of] for garbage collection
 
 # ============================================================================
@@ -92,10 +91,7 @@ DEFAULT_BLADE_FILE_EXTENSION = '.html'
 # AUTHENTICATION DEFAULTS
 # ============================================================================
 
-DEFAULT_ACCESS_TOKEN_TTL = 900  # seconds (15 minutes)
-DEFAULT_REFRESH_TOKEN_TTL = 2592000  # seconds (30 days)
-DEFAULT_JWT_ALGORITHM = 'RS256'
-DEFAULT_USER_CACHE_TTL = 300  # seconds (5 minutes)
+DEFAULT_TOKEN_LIFETIME_SECONDS = 2592000  # seconds (30 days)
 
 # ============================================================================
 # LOGGING DEFAULTS

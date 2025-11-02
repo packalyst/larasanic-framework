@@ -6,7 +6,7 @@ from larasanic.middleware.base_middleware import Middleware
 from larasanic.http import ResponseHelper
 from sanic import Request
 from typing import Optional
-from larasanic.support.facades import Auth
+from larasanic.support.facades import HttpRequest
 
 class GuestMiddleware(Middleware):
     """
@@ -44,15 +44,11 @@ class GuestMiddleware(Middleware):
         return cls(redirect_to=Config.get('auth.HOME_URL', '/dashboard'))
 
     async def before_request(self, request: Request):
-        """
-        Check if user is NOT authenticated (guest)
-        """
         try:
             # Try to get user from request
-            user = await Auth.get_user_from_request(request)
+            user = HttpRequest.get_user()
             if user:
-                # Already authenticated - redirect away from guest pages
-                # STOP HERE, return response
+                # Already authenticated - redirect away from guest pages, STOP HERE, return response
                 return ResponseHelper.redirect(self.redirect_to)
             # Not authenticated (guest) - continue to login/register page
             return None

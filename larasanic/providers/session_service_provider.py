@@ -19,4 +19,5 @@ class SessionServiceProvider(ServiceProvider):
         # Register session middleware using App facade
         middleware_manager = App.make('middleware_manager')
 
-        middleware_manager.add(SessionMiddleware())
+        # Pass the CLASS - add() will handle registration and config loading
+        middleware_manager.add(SessionMiddleware)

@@ -3,10 +3,9 @@ WebSocket Service Provider
 Registers WebSocket services and routes
 """
 from larasanic.service_provider import ServiceProvider
-from larasanic.websocket.ws_manager import WebSocketManager
-from larasanic.websocket.ws_guard import WebSocketGuard
+from larasanic.websocket import WebSocketManager,WebSocketGuard
 from larasanic.support import Config
-from larasanic.support.facades import App, Auth
+from larasanic.support.facades import App
 
 
 class WebSocketServiceProvider(ServiceProvider):
@@ -17,7 +16,7 @@ class WebSocketServiceProvider(ServiceProvider):
         if not Config.get('app.WS_ENABLED', True):
             return False
         
-        ws_guard = WebSocketGuard(Auth)
+        ws_guard = WebSocketGuard()
 
         # Create WebSocket manager
         ws_manager = WebSocketManager(ws_guard)

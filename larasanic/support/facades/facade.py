@@ -2,10 +2,9 @@
 Facade System
 Laravel-style facade pattern for static-like access to services
 """
-from typing import Tuple, Dict, Any, Optional
+from typing import  Any, Optional
 from contextvars import ContextVar
 from sanic.request import Request
-from larasanic.support import Config
 
 # Global application instance storage
 _app_instance: Optional[Any] = None
@@ -119,7 +118,7 @@ class Facade(metaclass=FacadeMeta):
 
         # Resolve from container
         return app.make(accessor)
-
+    
     @classmethod
     def get_app(cls):
         """
@@ -131,16 +130,6 @@ class Facade(metaclass=FacadeMeta):
         return _app_instance
     
     @classmethod
-    def get_sanic(cls):
-        """
-        Get the application instance
-
-        Returns:
-            Application instance or None
-        """
-        return cls.get_app().sanic_app
-
-    @classmethod
     def set_app(cls, app):
         """
         Set the application instance (called during bootstrap)
@@ -150,6 +139,11 @@ class Facade(metaclass=FacadeMeta):
         """
         global _app_instance
         _app_instance = app
+        from larasanic.package_manager import PackageManager
+        package_manager = PackageManager()
+        package_manager.discover()
+        app.singleton('package_manager', package_manager)
+        
 
     @classmethod
     def get_current_request(cls):
@@ -162,7 +156,7 @@ class Facade(metaclass=FacadeMeta):
         return _current_request.get()
 
     @classmethod
-    def set_current_request(cls, request: Request):
+    async def set_current_request(cls, request: Request):
         """
         Set the current request in context (for request-scoped data)
         Args:
@@ -177,7 +171,7 @@ class Facade(metaclass=FacadeMeta):
 
         # Analyze request and store in ctx for access via HttpRequest facade
         # Import here to avoid circular dependency
-        from larasanic.support.facades import HttpRequest,Route
+        from larasanic.support.facades import HttpRequest,Route,Auth
         from larasanic.support import Config,Str
 
         request.ctx._request_analysis = HttpRequest._handle_spa_request()
@@ -196,6 +190,11 @@ class Facade(metaclass=FacadeMeta):
             # Set in request context via HttpRequest facade
             HttpRequest.set('route', route_obj)
             HttpRequest.set('route_name', route_obj.get_name())
+
+        if route_obj.get_blueprint() != 'static':
+            user = await Auth.get_user_from_token()
+            
+            HttpRequest.set_user(user)
 
     @classmethod
     def clear_current_request(cls):

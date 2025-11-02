@@ -31,7 +31,6 @@ class Storage:
     │   │   │   ├── data/   # Data cache
     │   │   │   └── commands.cache
     │   │   ├── sessions/   # Session storage
-    │   │   └── keys/       # Security keys
     │   ├── logs/           # Log files
     │   └── database/       # Database files
     └── main.py             # Application entry point
@@ -210,11 +209,6 @@ class Storage:
         return cls.framework_storage('sessions', *paths)
 
     @classmethod
-    def keys(cls, *paths: str) -> Path:
-        """Get keys path (storage/keys/)"""
-        return cls.storage('keys', *paths)
-
-    @classmethod
     def database(cls, *paths: str) -> Path:
         """Get database storage path (storage/database/)"""
         return cls.storage('database', *paths)
@@ -224,37 +218,6 @@ class Storage:
         """Get logs path (storage/logs/)"""
         return cls.storage('logs', *paths)
 
-    # === JWT Keys ===
-    @classmethod
-    def get_jwt_paths(cls):
-        return cls.jwt_public_key(), cls.jwt_private_key()
-
-    @classmethod
-    def get_jwt_key_name(cls) -> str:
-        """
-        Get JWT key name from environment variable
-        Raises ValueError if not set - keys must be generated first
-        """
-        from larasanic.support.env_helper import EnvHelper
-        key_name = EnvHelper.get('JWT_KEY_NAME')
-        if not key_name:
-            raise ValueError(
-                "JWT_KEY_NAME not found in .env file. "
-                "Please generate security keys first: python artisan key:generate"
-            )
-        return key_name
-
-    @classmethod
-    def jwt_private_key(cls) -> Path:
-        """Get JWT private key path (storage/keys/{JWT_KEY_NAME}.key)"""
-        key_name = cls.get_jwt_key_name()
-        return cls.keys(f"{key_name}.key")
-
-    @classmethod
-    def jwt_public_key(cls) -> Path:
-        """Get JWT public key path (storage/keys/{JWT_KEY_NAME}.pub)"""
-        key_name = cls.get_jwt_key_name()
-        return cls.keys(f"{key_name}.pub")
 
     # === Helpers ===
 
@@ -285,7 +248,6 @@ class Storage:
             cls.cache_blade(),
             cls.cache_data(),
             cls.sessions(),
-            cls.keys(),
             cls.database(),
             cls.logs(),
             cls.public(),

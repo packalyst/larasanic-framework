@@ -6,7 +6,7 @@ from larasanic.middleware.base_middleware import Middleware
 from larasanic.http import ResponseHelper
 from sanic import Request
 from typing import Optional
-from larasanic.support.facades import Auth, HttpRequest
+from larasanic.support.facades import HttpRequest
 
 class AuthMiddleware(Middleware):
     """
@@ -62,14 +62,10 @@ class AuthMiddleware(Middleware):
         """
         try:
             # Try to get user from request (JWT token or session)
-            user = await Auth.get_user_from_request(request)
-
+            user = HttpRequest.get_user()
             if not user:
                 # Not authenticated - STOP HERE, return response
                 return self._handle_unauthenticated(request)
-
-            # Authenticated - add user to request context for use in handlers
-            HttpRequest.set_user(user)
 
             # Continue to next middleware/handler
             return None

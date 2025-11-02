@@ -32,6 +32,32 @@ class SessionMiddleware(Middleware):
     CONFIG_MAPPING = _get_config_defaults.__func__()
     DEFAULT_ENABLED = True
 
+    @classmethod
+    def _is_enabled(cls) -> bool:
+        """Check if middleware should be enabled"""
+        import sys
+
+        # Disable for setup commands (they need to run before secrets exist)
+        if 'main.py' in sys.argv[0] and len(sys.argv) > 1:
+            if sys.argv[1] in ['app:setup', 'setup_app']:
+                return False
+
+        # Check if APP_SECRET_KEY exists for cookie driver
+        from larasanic.support import Config
+        driver = Config.get('session.DRIVER', 'file')
+
+        if driver == 'cookie':
+            secret = Config.get('app.APP_SECRET_KEY')
+            if not secret:
+                # Only raise error if not in setup mode
+                raise ValueError(
+                    "APP_SECRET_KEY is required for cookie session driver!\n"
+                    "Run: python main.py app:setup\n"
+                    "Or manually set APP_SECRET_KEY in .env file"
+                )
+
+        return True
+
     def __init__(self, driver='file', lifetime=None, cookie_name=None,
                  cookie_path='/', cookie_domain=None, cookie_secure=False,
                  cookie_http_only=True, cookie_same_site='Lax', lottery=None):
@@ -63,8 +89,16 @@ class SessionMiddleware(Middleware):
             return FileSessionStore(path)
 
         elif driver == 'cookie':
-            from larasanic.defaults import DEFAULT_SESSION_SECRET_LENGTH
-            secret = Config.get('session.SECRET_KEY') or Crypto.generate_secret(DEFAULT_SESSION_SECRET_LENGTH)
+            # Use APP_SECRET_KEY from app config (shared across all features)
+            secret = Config.get('app.APP_SECRET_KEY')
+
+            if not secret:
+                raise ValueError(
+                    "APP_SECRET_KEY is required for cookie session driver!\n"
+                    "Run: python main.py setup_app\n"
+                    "Or manually set APP_SECRET_KEY in .env file"
+                )
+
             return CookieSessionStore(secret)
 
         elif driver == 'array':

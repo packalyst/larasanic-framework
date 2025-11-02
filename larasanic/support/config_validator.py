@@ -253,25 +253,6 @@ def validate_security_config(config) -> ConfigValidator:
             "CSRF_SECRET must be at least 32 characters"
         )
 
-    # JWT keys
-    jwt_private_key = getattr(config, 'JWT_PRIVATE_KEY_PATH', None)
-    jwt_public_key = getattr(config, 'JWT_PUBLIC_KEY_PATH', None)
-
-    if jwt_private_key:
-        validator.validate_path_exists('security.JWT_PRIVATE_KEY_PATH', jwt_private_key, must_be_file=True)
-
-    if jwt_public_key:
-        validator.validate_path_exists('security.JWT_PUBLIC_KEY_PATH', jwt_public_key, must_be_file=True)
-
-    # JWT algorithm
-    jwt_algorithm = getattr(config, 'JWT_ALGORITHM', None)
-    if jwt_algorithm:
-        validator.validate_in_choices(
-            'security.JWT_ALGORITHM',
-            jwt_algorithm,
-            ['RS256', 'RS384', 'RS512', 'HS256', 'HS384', 'HS512']
-        )
-
     # Warnings
     app_env = os.getenv('APP_ENV', 'development')
     if app_env == 'production':

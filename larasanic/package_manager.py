@@ -3,17 +3,15 @@ Package Manager
 Handles package discovery, loading, and management
 """
 import json
-from typing import Dict, List, Optional, Any, TYPE_CHECKING
-import importlib
+from larasanic.support.facades import App
+from typing import Dict, Any, TYPE_CHECKING
 from larasanic.support.storage import Storage
 if TYPE_CHECKING:
     from pathlib import Path
 
 class PackageManager:
     """Manages framework packages"""
-
-    def __init__(self, app):
-        self.app = app
+    def __init__(self):
         self.packages: Dict[str, 'PackageManifest'] = {}
         self.packages_path = Storage.packages()
 
@@ -32,6 +30,9 @@ class PackageManager:
 
         return self.packages
 
+    def get_packages(self):
+        return self.packages
+     
     def load_package(self, package_name: str):
         """Load a specific package"""
         if package_name not in self.packages:
@@ -55,7 +56,7 @@ class PackageManager:
         # Import and register the service provider
         if manifest.provider:
             provider_class = ClassLoader.load(manifest.provider)
-            self.app.register_provider(provider_class)
+            App.register_provider(provider_class)
 
         return manifest
 
