@@ -26,7 +26,6 @@ aiofiles>=23.2.1
 
 # Security & Crypto
 bcrypt>=5.0.0  # Updated to latest
-pyjwt>=2.10.1
 cryptography>=46.0.3  # CRITICAL security update
 itsdangerous>=2.2.0
 

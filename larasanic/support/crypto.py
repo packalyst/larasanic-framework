@@ -6,14 +6,13 @@ import secrets
 import hmac
 import hashlib
 import bcrypt
-import jwt
 import os
 import stat
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
-from typing import Tuple, Optional, Dict, Any, TYPE_CHECKING
+from typing import Tuple, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -330,102 +329,6 @@ class Crypto:
                 )
 
         return key_path.read_text()
-
-    # === JWT Token Operations ===
-
-    @staticmethod
-    async def generate_jwt_token(
-        user_id: int,
-        private_key: str,
-        algorithm: str,
-        ttl_seconds: int,
-        token_type: str
-    ) -> str:
-        """
-        Generate JWT token in thread pool (non-blocking async)
-
-        Args:
-            user_id: User ID to encode
-            private_key: RSA private key for signing
-            algorithm: JWT algorithm (e.g., RS256)
-            ttl_seconds: Time to live in seconds
-            token_type: Token type (access/refresh)
-
-        Returns:
-            JWT token string
-        """
-        def _generate():
-            payload = {
-                "user_id": user_id,
-                "type": token_type,
-                "exp": datetime.utcnow() + timedelta(seconds=ttl_seconds),
-                "iat": datetime.utcnow()
-            }
-            return jwt.encode(payload, private_key, algorithm=algorithm)
-
-        loop = asyncio.get_event_loop()
-        return await loop.run_in_executor(_executor, _generate)
-
-    @staticmethod
-    def verify_jwt_token(
-        token: str,
-        public_key: str,
-        algorithm: str,
-        expected_type: Optional[str] = None
-    ) -> Optional[Dict[str, Any]]:
-        """
-        Verify and decode JWT token
-
-        Args:
-            token: JWT token to verify
-            public_key: RSA public key for verification
-            algorithm: JWT algorithm (e.g., RS256)
-            expected_type: Expected token type (optional)
-
-        Returns:
-            Decoded payload if valid, None otherwise
-        """
-        try:
-            payload = jwt.decode(token, public_key, algorithms=[algorithm])
-
-            # Check token type if specified
-            if expected_type and payload.get("type") != expected_type:
-                return None
-
-            return payload
-        except jwt.ExpiredSignatureError:
-            return None
-        except jwt.InvalidTokenError:
-            return None
-        except Exception:
-            return None
-
-    @staticmethod
-    def extract_jwt_user_id(
-        token: str,
-        public_key: str,
-        algorithm: str,
-        expected_type: Optional[str] = None
-    ) -> Optional[int]:
-        """
-        Extract user ID from JWT token
-
-        Args:
-            token: JWT token
-            public_key: RSA public key for verification
-            algorithm: JWT algorithm (e.g., RS256)
-            expected_type: Expected token type (optional)
-
-        Returns:
-            User ID if valid, None otherwise
-        """
-        if not token:
-            return None
-
-        payload = Crypto.verify_jwt_token(token, public_key, algorithm, expected_type)
-        if payload:
-            return payload.get("user_id")
-        return None
 
     # === Random Token Generation ===
 
