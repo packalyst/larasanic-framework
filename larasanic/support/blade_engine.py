@@ -89,10 +89,14 @@ class BladeTemplateEngine:
     def add_global(self, key: str, value: Any):
         """Add a global variable available in all templates"""
         self.globals[key] = value
+        # Also add to underlying SwiftBlade engine for component access
+        self.engine.add_global(key, value)
 
     def add_globals(self, globals_dict: Dict[str, Any]):
         """Add multiple global variables"""
         self.globals.update(globals_dict)
+        # Also add to underlying SwiftBlade engine for component access
+        self.engine.add_globals(globals_dict)
 
     def get_globals(self) -> Dict[str, Any]:
         """Get all global variables"""

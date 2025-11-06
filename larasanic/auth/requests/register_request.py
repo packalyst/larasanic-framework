@@ -16,6 +16,7 @@ class RegisterRequest(FormRequest):
             Dictionary of validation rules
         """
         return {
+            'name': 'required|string|min:2|max:255',
             'email': 'required|email|unique:users,email',
             'password': 'required|string|min:8'
         }
@@ -28,6 +29,8 @@ class RegisterRequest(FormRequest):
             Dictionary of custom error messages
         """
         return {
+            'name.required': 'Name is required',
+            'name.min': 'Name must be at least 2 characters',
             'email.required': 'Email is required',
             'email.email': 'Invalid email format',
             'email.unique': 'Email already exists',
@@ -43,6 +46,7 @@ class RegisterRequest(FormRequest):
             Dictionary of custom attribute names
         """
         return {
+            'name': 'name',
             'email': 'email address',
             'password': 'password'
         }

@@ -87,20 +87,28 @@ class AuthService:
     # Authentication & User Management
     # ========================================================================
 
-    async def register_user(self, email: str, password: str) -> Optional[any]:
+    async def register_user(self, data: dict) -> Optional[any]:
         """
         Register a new user
+
+        Args:
+            data: Dictionary with user data (name, email, password)
         """
         # Check if user already exists
-        existing_user = await User.find_by_email(email)
+        existing_user = await User.find_by_email(data['email'])
         if existing_user:
             return None
 
         # Hash password (use async version to avoid blocking event loop)
-        password_hash = await Crypto.hash_password_async(password)
+        password_hash = await Crypto.hash_password_async(data['password'])
+
+        # Build user data with hashed password
+        user_data = {**data}
+        user_data.pop('password', None)  # Remove plain password
+        user_data['password_hash'] = password_hash
 
         # Create user
-        user = await User.create(email=email,password_hash=password_hash)
+        user = await User.create(**user_data)
 
         # Generate tokens
         await self.create_token_for_user(user_id=user.id)
@@ -127,7 +135,55 @@ class AuthService:
         # Return user only if it exists (after password check)
         return user
 
-    
+    # ========================================================================
+    # Laravel-like Helper Methods
+    # ========================================================================
+
+    def check(self) -> bool:
+        """
+        Determine if the current user is authenticated (Laravel: Auth::check())
+
+        Returns:
+            bool: True if user is authenticated, False otherwise
+        """
+        try:
+            user = HttpRequest.get_user()
+            return user is not None
+        except Exception:
+            return False
+
+    def guest(self) -> bool:
+        """
+        Determine if the current user is a guest (not authenticated) (Laravel: Auth::guest())
+
+        Returns:
+            bool: True if user is NOT authenticated, False if authenticated
+        """
+        return not self.check()
+
+    def user(self) -> Optional[User]:
+        """
+        Get the currently authenticated user (Laravel: Auth::user())
+
+        Returns:
+            User instance or None
+        """
+        try:
+            return HttpRequest.get_user()
+        except Exception:
+            return None
+
+    def id(self) -> Optional[int]:
+        """
+        Get the ID of the currently authenticated user (Laravel: Auth::id())
+
+        Returns:
+            User ID or None
+        """
+        user = self.user()
+        return user.id if user else None
+
+
     def user_as_json(self) -> str:
         """
         Get user data as JSON string (for embedding in templates)

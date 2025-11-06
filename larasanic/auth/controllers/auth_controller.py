@@ -20,9 +20,7 @@ class AuthController:
             return ResponseHelper.validation_error(e.get_errors())
 
         # Register user with validated data
-        user = await Auth.register_user(
-            validated['email'],validated['password']
-        )
+        user = await Auth.register_user(validated)
 
         if not user:
             return ResponseHelper.bad_request("Email already exists")
