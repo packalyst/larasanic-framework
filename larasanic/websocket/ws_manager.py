@@ -48,9 +48,9 @@ class WebSocketManager:
             return
 
         try:
-            from larasanic.support import Config
+            from larasanic.support import EnvHelper
             from larasanic.defaults import DEFAULT_REDIS_URL
-            redis_url = Config.get('cache.REDIS_URL', DEFAULT_REDIS_URL)
+            redis_url = EnvHelper.get('REDIS_URL', DEFAULT_REDIS_URL)
 
             self.redis_client = aioredis.from_url(
                 redis_url,
