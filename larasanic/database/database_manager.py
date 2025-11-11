@@ -90,11 +90,14 @@ class DatabaseManager:
     async def _setup_sqlite_pragmas(self):
         """Setup SQLite performance optimizations"""
         connection = Tortoise.get_connection("default")
-
         # Enable WAL mode for better concurrency
-        await connection.execute_query("PRAGMA journal_mode=WAL")
+        # await connection.execute_query("PRAGMA journal_mode=WAL")
+        
+        # Use DELETE mode instead of WAL for better compatibility with external tools
+        # WAL mode causes data visibility issues with SQLiteStudio and other external DB viewers
+        await connection.execute_query("PRAGMA journal_mode=DELETE")
 
-        # Synchronous mode for better performance (still safe with WAL)
+        # Synchronous mode for better performance
         await connection.execute_query("PRAGMA synchronous=NORMAL")
 
         # Increase cache size (in pages, negative = KB)
