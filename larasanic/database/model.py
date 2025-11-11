@@ -3,11 +3,49 @@ Base Model
 Provides Laravel-style base model with helper methods
 """
 from tortoise.models import Model as TortoiseModel
+from tortoise.queryset import QuerySet
 from tortoise.exceptions import DoesNotExist
 from larasanic.database.pagination import PaginationMixin
 from typing import Optional, List, Dict, Any, Union
 from datetime import datetime
 import json
+
+
+class LaravelQuerySet(QuerySet):
+    """Extended QuerySet with Laravel-style methods"""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._random_order = False
+
+    def inRandomOrder(self):
+        """
+        Order results randomly
+
+        Returns:
+            QuerySet ordered randomly
+
+        Example:
+            users = await User.filter(active=True).inRandomOrder().all()
+        """
+        queryset = self._clone()
+        queryset._random_order = True
+        return queryset
+
+    def _clone(self):
+        """Override clone to preserve random order flag"""
+        queryset = super()._clone()
+        queryset._random_order = getattr(self, '_random_order', False)
+        return queryset
+
+    async def _execute(self):
+        """Override execute to add RANDOM() ordering if needed"""
+        if getattr(self, '_random_order', False):
+            # Clear existing orderings and use raw SQL
+            self._orderings = []
+            # Modify the query to add ORDER BY RANDOM()
+            self.query = self.query.orderby('RANDOM()')
+        return await super()._execute()
 
 
 class ModelNotFoundException(Exception):
@@ -45,6 +83,10 @@ class Model(TortoiseModel, PaginationMixin):
         users = await User.latest()
         users = await User.oldest()
 
+        # Random order
+        users = await User.inRandomOrder().all()
+        users = await User.where(active=True).inRandomOrder().limit(10)
+
         # Pluck values
         emails = await User.pluck('email')
 
@@ -76,6 +118,13 @@ class Model(TortoiseModel, PaginationMixin):
     class Meta:
         abstract = True
 
+    # Override to use custom QuerySet
+    @classmethod
+    def _init_meta(cls, **kwargs):
+        """Initialize meta with custom QuerySet"""
+        super()._init_meta(**kwargs)
+        cls._meta.queryset_class = LaravelQuerySet
+
     # ====================
     # Query Builder Helpers
     # ====================
@@ -89,12 +138,53 @@ class Model(TortoiseModel, PaginationMixin):
             **filters: Field filters
 
         Returns:
-            QuerySet
+            LaravelQuerySet
 
         Example:
             users = await User.where(email='test@test.com').all()
         """
-        return cls.filter(**filters)
+        return LaravelQuerySet(model=cls).filter(**filters)
+
+    @classmethod
+    def filter(cls, *args, **kwargs):
+        """Override filter to return LaravelQuerySet"""
+        return LaravelQuerySet(model=cls).filter(*args, **kwargs)
+
+    @classmethod
+    def all(cls):
+        """Override all to return LaravelQuerySet"""
+        return LaravelQuerySet(model=cls)
+
+    @classmethod
+    async def raw(cls, query: str, params: Optional[List[Any]] = None) -> List[Dict[str, Any]]:
+        """
+        Execute raw SQL query and return results as list of dictionaries
+
+        Args:
+            query: Raw SQL query string
+            params: Optional list of parameters for parameterized queries
+
+        Returns:
+            List of dictionaries with query results
+
+        Example:
+            results = await User.raw(
+                "SELECT * FROM users WHERE created_at > ?",
+                [datetime(2024, 1, 1)]
+            )
+
+            duplicates = await Files.raw('''
+                SELECT artist, title, COUNT(*) as count
+                FROM files
+                WHERE status = ?
+                GROUP BY artist, title
+                HAVING COUNT(*) > 1
+            ''', ['analyzing'])
+        """
+        connection = cls._meta.db
+        params = params or []
+
+        return await connection.execute_query_dict(query, params)
 
     @classmethod
     async def find(cls, pk: Any) -> Optional['Model']:
@@ -269,6 +359,22 @@ class Model(TortoiseModel, PaginationMixin):
         if limit:
             return await queryset.limit(limit)
         return queryset
+
+    @classmethod
+    def inRandomOrder(cls):
+        """
+        Order records randomly (Laravel-style)
+
+        Returns:
+            QuerySet ordered randomly
+
+        Example:
+            users = await User.inRandomOrder().all()
+            users = await User.inRandomOrder().limit(10)
+            pending = await Files.where(status='pending').inRandomOrder().all()
+        """
+        from tortoise.expressions import RawSQL
+        return cls.all().order_by(RawSQL('RANDOM()'))
 
     @classmethod
     async def pluck(cls, field: str, **filters) -> List[Any]:
